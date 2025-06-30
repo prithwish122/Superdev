@@ -17,11 +17,21 @@ async fn keypair_handler() -> Json<serde_json::Value> {
     }))
 }
 
+async fn createspl() -> Json<serde_json::Value> {
+    Json(json!({
+        "mintAuthority": "base58-encoded-public-key",
+        "mint": "base58-encoded-public-key",
+  "     decimals": 6
+    }))
+}
+
 #[tokio::main]
 async fn main() {
     let app = Router::new()
         .route("/", get(handler))
-        .route("/keypair", post(keypair_handler));
+        .route("/keypair", post(keypair_handler))
+        .route("/token/create", post(createspl));
+        
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
     println!("Listening on http://{}", addr);
