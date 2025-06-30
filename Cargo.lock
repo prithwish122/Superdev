@@ -220,6 +220,7 @@ dependencies = [
  "axum",
  "hyper",
  "hyper-util",
+ "serde_json",
  "tokio",
 ]
 
