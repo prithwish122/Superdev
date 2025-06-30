@@ -5,6 +5,7 @@ use axum::{
 use serde_json::json;
 use std::net::SocketAddr;
 use tokio::net::TcpListener;
+use serde_json::Value;
 
 async fn handler() -> &'static str {
     "Hey this is a test"
@@ -20,7 +21,18 @@ async fn keypair_handler() -> Json<serde_json::Value> {
     }))
 }
 
-async fn createspl() -> Json<serde_json::Value> {
+async fn createspl(Json(body): Json<Value>) -> Json<serde_json::Value> {
+    println!("Received body: {:?}", body);
+
+    if body.get("mintAuthority").is_none() || body.get("mint").is_none() || body.get("decimals").is_none() {
+        return Json(json!({
+            "success": false,
+            "error": "Missing required fields: mintAuthority, mint, or decimals"
+        }));
+    }
+
+    // let has_name = body.get("name").is_some();
+
     Json(json!({
         "success": true,
         "data": {
@@ -42,7 +54,16 @@ async fn createspl() -> Json<serde_json::Value> {
     }))
 }
 
-async fn mint_to_handler() -> Json<serde_json::Value> {
+
+async fn mint_to_handler(Json(body): Json<Value>) -> Json<serde_json::Value> {
+    println!("Received body: {:?}", body);
+
+    if body.get("mint").is_none() || body.get("destination").is_none() || body.get("authority").is_none() || body.get("amount").is_none() {
+        return Json(json!({
+            "success": false,
+            "error": "Missing required fields: mintAuthority, mint, or decimals"
+        }));
+    }
     Json(json!({
         "success": true,
         "data": {
@@ -69,13 +90,39 @@ async fn mint_to_handler() -> Json<serde_json::Value> {
     }))
 }
 
+
+
+
+async fn message_sign_handler(Json(body): Json<Value>) -> Json<serde_json::Value> {
+    println!("Received body: {:?}", body);
+
+    if body.get("message").is_none() || body.get("secret").is_none() {
+        return Json(json!({
+            "success": false,
+            "error": "Missing required fields: message or signer"
+        }));
+    }
+
+    Json(json!({
+  "success": true,
+  "data": {
+    "signature": "base64-encoded-signature",
+    "public_key": "base58-encoded-public-key",
+    "message": "Hello, Solana!"
+  }
+}
+))
+}
+
 #[tokio::main]
 async fn main() {
     let app = Router::new()
         .route("/", get(handler))
         .route("/keypair", post(keypair_handler))
         .route("/token/create", post(createspl))
-        .route("/token/mint", post(mint_to_handler));
+        .route("/token/mint", post(mint_to_handler))
+        .route("/message/sign", post(message_sign_handler));
+
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
     println!("Listening on http://{}", addr);
