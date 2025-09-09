@@ -17,4 +17,4 @@ This project is a minimal HTTP server built with [Axum](https://github.com/tokio
 
 ---
 
-This project was generated with GitHub Copilot.
+
